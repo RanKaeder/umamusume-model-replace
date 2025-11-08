@@ -14,7 +14,9 @@ def get_body_mtl_path(_id):
 def get_body_path(_id):
     return [
         f"3d/chara/body/bdy{_id}/pfb_bdy{_id}",
-        get_body_mtl_path(_id)
+        get_body_mtl_path(_id),
+        *get_bodyalpha_path(_id),
+        *get_bodyphy_path(_id)
     ]
 
 
@@ -27,7 +29,52 @@ def get_head_path(_id):
         f"sourceresources/3d/chara/head/chr{_id}/materials/mtl_chr{_id}_hair",
         f"sourceresources/3d/chara/head/chr{_id}/materials/mtl_chr{_id}_mayu",
         f"sourceresources/3d/chara/head/chr{_id}/materials/mtl_chr{_id}_tear",
-        f"sourceresources/3d/chara/head/chr{_id}/facial/ast_chr{_id}_ear_target"
+        f"sourceresources/3d/chara/head/chr{_id}/texture/tex_chr{_id}_cheek0",
+        f"sourceresources/3d/chara/head/chr{_id}/facial/ast_chr{_id}_ear_target",
+        *get_headalpha_path(_id),
+        *get_headphy_path(_id)
+    ]
+
+
+def get_headalpha_path(_id):
+    return [
+        f"sourceresources/3d/chara/head/chr{_id}/materials/mtl_chr{_id}_hair_alpha0",
+        f"sourceresources/3d/chara/head/chr{_id}/materials/mtl_chr{_id}_hair_alpha1"
+    ]
+
+
+def get_headphy_path(_id):
+    return [
+        f"3d/chara/head/chr{_id}/clothes/pfb_chr{_id}_cloth00",
+        f"3d/chara/head/chr{_id}/clothes/pfb_chr{_id}_cloth01",
+        f"3d/chara/head/chr{_id}/clothes/pfb_chr{_id}_cloth02",
+        f"3d/chara/head/chr{_id}/clothes/pfb_chr{_id}_cloth03",
+        f"3d/chara/head/chr{_id}/clothes/pfb_chr{_id}_cloth04"
+    ]
+
+
+def get_bodyphy_path(_id):
+    return [
+        f"3d/chara/body/bdy{_id}/clothes/ast_bdy{_id}_skirt00",
+        f"3d/chara/body/bdy{_id}/clothes/ast_bdy{_id}_skirt01",
+        f"3d/chara/body/bdy{_id}/clothes/ast_bdy{_id}_skirt02",
+        f"3d/chara/body/bdy{_id}/clothes/pfb_bdy{_id}_bust_cloth00",
+        f"3d/chara/body/bdy{_id}/clothes/pfb_bdy{_id}_bust_cloth01",
+        f"3d/chara/body/bdy{_id}/clothes/pfb_bdy{_id}_bust_cloth02",
+        f"3d/chara/body/bdy{_id}/clothes/pfb_bdy{_id}_bust_cloth03",
+        f"3d/chara/body/bdy{_id}/clothes/pfb_bdy{_id}_bust_cloth04",
+        f"3d/chara/body/bdy{_id}/clothes/pfb_bdy{_id}_cloth00",
+        f"3d/chara/body/bdy{_id}/clothes/pfb_bdy{_id}_cloth01",
+        f"3d/chara/body/bdy{_id}/clothes/pfb_bdy{_id}_cloth02",
+        f"3d/chara/body/bdy{_id}/clothes/pfb_bdy{_id}_cloth03",
+        f"3d/chara/body/bdy{_id}/clothes/pfb_bdy{_id}_cloth04"
+    ]
+
+
+def get_bodyalpha_path(_id):
+    return [
+        f"sourceresources/3d/chara/body/bdy{_id}/materials/mtl_bdy{_id}_alpha0",
+        f"sourceresources/3d/chara/body/bdy{_id}/materials/mtl_bdy{_id}_alpha1"
     ]
 
 

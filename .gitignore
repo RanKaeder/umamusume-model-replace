@@ -132,3 +132,8 @@ dmypy.json
 /umaModelReplace/backup
 /umaModelReplace/edited
 /editTexture
+umaModelReplace/meta_decrypted/
+umaModelReplace/dat_encrypted/
+umaModelReplace/dat_encrypted_output/
+umaModelReplace/dat_decrypted/
+umaModelReplace/dat_decrypted_temp/

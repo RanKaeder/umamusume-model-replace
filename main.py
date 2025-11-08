@@ -3,41 +3,53 @@ import umaModelReplace
 uma = umaModelReplace.UmaReplace()
 
 
-def replace_char_body_texture(char_id: str):
-    is_not_exist, msg = uma.save_char_body_texture(char_id, False)
-    if not is_not_exist:
-        print(f"解包资源已存在: {msg}")
-        do_replace = input("输入 \"Y\" 覆盖已解包资源, 输入其它内容跳过导出: ")
-        if do_replace in ["Y", "y"]:
-            _, msg = uma.save_char_body_texture(char_id, True)
+def handle_texture_export_and_replace(export_func, replace_func, resource_id: str):
+    """
+    通用的纹理导出和替换处理函数
+    :param export_func: 导出函数
+    :param replace_func: 替换函数
+    :param resource_id: 资源ID
+    """
+    # 尝试导出，如果已存在则询问是否覆盖
+    result = export_func(resource_id, False)
 
-    print(f"已尝试导出资源, 请查看目录: {msg}")
-    do_fin = input("请进行文件修改/替换, 修改完成后请输入 \"Y\" 打包并替换游戏文件。\n"
-                   "若您不想立刻修改, 可以输入其它任意内容退出, 您可以在下次替换时选择\"跳过导出\"\n"
-                   "请输入: ")
-    if do_fin.strip() in ["Y", "y"]:
-        uma.replace_char_body_texture(char_id)
-        print("贴图已修改")
-
-
-def replace_char_head_texture(char_id: str):
-    for n, i in enumerate(uma.save_char_head_texture(char_id, False)):
-        is_not_exist, msg = i
-
+    # 处理生成器或普通返回值
+    if hasattr(result, '__iter__') and not isinstance(result, tuple):
+        # 生成器情况（如 save_char_head_texture）
+        for is_not_exist, msg in result:
+            if not is_not_exist:
+                print(f"解包资源已存在: {msg}")
+                do_replace = input("输入 \"Y\" 覆盖已解包资源, 输入其它内容跳过导出: ")
+                if do_replace in ["Y", "y"]:
+                    for _, msg in export_func(resource_id, True):
+                        pass
+            print(f"已尝试导出资源, 请查看目录: {msg}")
+            break
+    else:
+        # 普通返回值情况（如 save_char_body_texture）
+        is_not_exist, msg = result
         if not is_not_exist:
             print(f"解包资源已存在: {msg}")
             do_replace = input("输入 \"Y\" 覆盖已解包资源, 输入其它内容跳过导出: ")
             if do_replace in ["Y", "y"]:
-                _, msg = uma.save_char_head_texture(char_id, True, n)[0]
-
+                _, msg = export_func(resource_id, True)
         print(f"已尝试导出资源, 请查看目录: {msg}")
 
+    # 询问是否立即替换
     do_fin = input("请进行文件修改/替换, 修改完成后请输入 \"Y\" 打包并替换游戏文件。\n"
                    "若您不想立刻修改, 可以输入其它任意内容退出, 您可以在下次替换时选择\"跳过导出\"\n"
                    "请输入: ")
     if do_fin.strip() in ["Y", "y"]:
-        uma.replace_char_head_texture(char_id)
+        replace_func(resource_id)
         print("贴图已修改")
+
+
+def replace_char_body_texture(char_id: str):
+    handle_texture_export_and_replace(uma.save_char_body_texture, uma.replace_char_body_texture, char_id)
+
+
+def replace_char_head_texture(char_id: str):
+    handle_texture_export_and_replace(uma.save_char_head_texture, uma.replace_char_head_texture, char_id)
 
 
 if __name__ == "__main__":
