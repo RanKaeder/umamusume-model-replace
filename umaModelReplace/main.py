@@ -122,7 +122,7 @@ class UmaReplace:
             f.write(env.file.save())
         return save_name
 
-    def get_texture_in_bundle(self, bundle_name: str, src_names: t.List[str], force_replace=False):
+    def get_texture_in_bundle(self, bundle_name: str, src_names: t.Optional[t.List[str]], force_replace=False):
         base_path = f"./editTexture/{bundle_name}"
         if not os.path.isdir(base_path):
             os.makedirs(base_path)
@@ -136,7 +136,7 @@ class UmaReplace:
             if obj.type.name == "Texture2D":
                 data = obj.read()
                 if hasattr(data, "name"):
-                    if data.name in src_names:
+                    if src_names is None or (data.name in src_names):
                         img_data = data.read()
                         image: Image = img_data.image
                         image.save(f"{base_path}/{data.name}.png")
@@ -167,6 +167,16 @@ class UmaReplace:
         bundle_hash = self.get_bundle_hash(mtl_bdy_path, None)
         return self.get_texture_in_bundle(bundle_hash, assets_path.get_body_mtl_names(char_id), force_replace)
 
+    def save_char_head_texture(self, char_id: str, force_replace=False, on_index=-1):
+        ret = []
+        for n, i in enumerate(assets_path.get_head_mtl_path(char_id)):
+            if on_index != -1:
+                if n != on_index:
+                    continue
+            bundle_hash = self.get_bundle_hash(i, None)
+            ret.append(self.get_texture_in_bundle(bundle_hash, None, force_replace))
+        return ret
+
     def replace_char_body_texture(self, char_id: str):
         mtl_bdy_path = assets_path.get_body_mtl_path(char_id)
         bundle_hash = self.get_bundle_hash(mtl_bdy_path, None)
@@ -174,6 +184,14 @@ class UmaReplace:
         edited_path = self.replace_texture2d(bundle_hash)
         # print("save", edited_path)
         shutil.copyfile(edited_path, self.get_bundle_path(bundle_hash))
+
+    def replace_char_head_texture(self, char_id: str):
+        for mtl_bdy_path in assets_path.get_head_mtl_path(char_id):
+            bundle_hash = self.get_bundle_hash(mtl_bdy_path, None)
+            self.file_backup(bundle_hash)
+            edited_path = self.replace_texture2d(bundle_hash)
+            # print("save", edited_path)
+            shutil.copyfile(edited_path, self.get_bundle_path(bundle_hash))
 
     def replace_file_ids(self, orig_path: str, new_path: str, id_orig: str, id_new: str):
         orig_hash = self.get_bundle_hash(orig_path, id_orig)
@@ -402,7 +420,7 @@ class UmaReplace:
                 dress['head_sub_id'] = 0
             self.master_conn.row_factory = dict_factory
             cursor = self.master_conn.cursor()
-            cursor.execute("INSERT INTO dress_data VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            cursor.execute("INSERT INTO dress_data VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                            [dress['id'], dress['condition_type'], dress['have_mini'], dress['general_purpose'],
                             dress['costume_type'], dress['chara_id'], dress['use_gender'], dress['body_shape'],
                             dress['body_type'], dress['body_type_sub'], dress['body_setting'], dress['use_race'],
@@ -410,7 +428,8 @@ class UmaReplace:
                             dress['is_wet'], dress['is_dirt'], dress['head_sub_id'], dress['use_season'],
                             dress['dress_color_main'], dress['dress_color_sub'], dress['color_num'],
                             dress['disp_order'],
-                            dress['tail_model_id'], dress['tail_model_sub_id'], dress['start_time'], dress['end_time']])
+                            dress['tail_model_id'], dress['tail_model_sub_id'], dress['mini_mayu_shader_type'],
+                            dress['start_time'], dress['end_time']])
             self.master_conn.commit()
             cursor.close()
 
@@ -427,6 +446,76 @@ class UmaReplace:
             if 100000 < dress['id'] < 200000 and str(dress['id']).endswith('01'):
                 create_data(dress, unique)
         unlock_data()
+
+    def clear_live_blur(self, edit_id: str):
+        cursor = self.conn.cursor()
+        query = cursor.execute("SELECT h, n FROM a WHERE n LIKE 'cutt/cutt_son%/son%_camera'").fetchall()
+        bundle_names = [i[0] for i in query]
+        path_names = [i[1] for i in query]
+        cursor.close()
+        target_path = f"cutt/cutt_son{edit_id}/son{edit_id}_camera" if edit_id != "" else None
+        tLen = len(bundle_names)
+
+        for n, bn in enumerate(bundle_names):
+            path_name = path_names[n]
+            if target_path is not None:
+                if path_name != target_path:
+                    continue
+            print(f"Editing: {path_name} ({n + 1}/{tLen})")
+            try:
+                bundle_path = self.get_bundle_path(bn)
+                if not os.path.isfile(bundle_path):
+                    print(f"File not found: {bundle_path}")
+                    continue
+                env = UnityPy.load(bundle_path)
+                for obj in env.objects:
+                    if obj.type.name == "MonoBehaviour":
+                        if not obj.serialized_type.nodes:
+                            continue
+                        tree = obj.read_typetree()
+
+                        tree['postEffectDOFKeys']['thisList'] = [tree['postEffectDOFKeys']['thisList'][0]]
+                        dof_set_data = {
+                            "frame": 0,
+                            "attribute": 327680,
+                            "interpolateType": 0,
+                            "curve": {
+                                "m_Curve": [],
+                                "m_PreInfinity": 2,
+                                "m_PostInfinity": 2,
+                                "m_RotationOrder": 4
+                            },
+                            "easingType": 0,
+                            "forcalSize": 30.0,
+                            "blurSpread": 20.0,
+                            "charactor": 1,
+                            "dofBlurType": 3,
+                            "dofQuality": 1,
+                            "dofForegroundSize": 0.0,
+                            "dofFgBlurSpread": 1.0,
+                            "dofFocalPoint": 1.0,
+                            "dofSmoothness": 1.0,
+                            "BallBlurPowerFactor": 0.0,
+                            "BallBlurBrightnessThreshhold": 0.0,
+                            "BallBlurBrightnessIntensity": 1.0,
+                            "BallBlurSpread": 0.0
+                        }
+                        for k in dof_set_data:
+                            tree['postEffectDOFKeys']['thisList'][0][k] = dof_set_data[k]
+
+                        tree['postEffectBloomDiffusionKeys']['thisList'] = []
+                        tree['radialBlurKeys']['thisList'] = []
+
+                        obj.save_typetree(tree)
+
+                self.file_backup(bn)
+                with open(bundle_path, 'wb') as f:
+                    f.write(env.file.save())
+
+            except Exception as e:
+                print(f"Exception occurred when editing file: {bn}\n{e}")
+
+        print("done.")
 
 # a = UmaReplace()
 # a.file_backup("6NX7AYDRVFFGWKVGA4TDKUX2N63TRWRT")

@@ -21,16 +21,18 @@ python main.py
 - 根据提示操作即可。
 
 ```
-[1] replace head model
-[2] replace body model
-[3] replace tail model (deprecated)
-[4] replace head and body model
-[5] replace body materials
-[6] replace gacha character
-[7] replace skill character
-[8] replace g1 victory character action (Experimental)
-[9] unlock live dress
-[98] restore your changes
-[99] exit
+[1] 更换头部模型
+[2] 更换身体模型
+[3] 更换尾巴模型(不建议)
+[4] 更换头部与身体模型
+[5] 修改角色身体贴图
+[6] 更换抽卡开门人物
+[7] 更换技能动画
+[8] 更换G1胜利动作(实验性)
+[9] Live服装解锁
+[10] 清除Live所有模糊效果
+[11] 修改角色头部贴图
+[98] 复原所有修改
+[99] 退出
 ```
 
